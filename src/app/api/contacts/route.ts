@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
+import { createContactSchema } from "@/lib/validations/contact";
 import { NextRequest, NextResponse } from "next/server";
+
 
 export async function GET() {
   try{
@@ -24,7 +26,9 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    if (!body.firstName || !body.userId) {
+    const validatedData = createContactSchema.parse(body);
+
+    if (!validatedData.firstName || !validatedData.userId) {
       return NextResponse.json(
         {
           success: false,
@@ -36,11 +40,11 @@ export async function POST(req: NextRequest) {
 
     const contact = await prisma.contact.create({
       data: {
-        firstName: body.firstName,
-        lastName: body.lastName,
-        email: body.email,
-        phone: body.phone,
-        userId: body.userId,
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        email: validatedData.email,
+        phone: validatedData.phone,
+        userId: validatedData.userId,
       },
     });
 
